@@ -6,6 +6,13 @@ const PORT = 8080; //default port
 //Making data readable for humans
 app.use(bodyParser.urlencoded({extended: true}));
 
+//In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
+const generateRandomString = (length = 8) => {
+  return Math.random().toString(16).substring(2, length);
+};
+
+console.log(generateRandomString(8));
+
 //This tells the Express app to use EJS as its templating engine
 app.set("view engine", "ejs");
 
