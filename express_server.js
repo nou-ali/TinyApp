@@ -11,7 +11,7 @@ const generateRandomString = (length = 8) => {
   return Math.random().toString(16).substring(2, length);
 };
 
-console.log(generateRandomString(8));
+//console.log(generateRandomString(8));
 
 //This tells the Express app to use EJS as its templating engine
 app.set("view engine", "ejs");
@@ -43,9 +43,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//creating a post req to shortURL-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
+// will then be redirected to the shortURL page
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const longURL = req.body.longURL
+  const shortURL = generateRandomString()
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);         
 });
 
 //Add a GET Route to Show the Form
@@ -59,7 +64,6 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on ${PORT}!`);
