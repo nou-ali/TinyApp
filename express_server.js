@@ -12,6 +12,11 @@ app.get("/", (req, res) => {
 
 });
 
+//Showcase JSON string representing the entire urlDatabase object
+app.get("/urls.json", (req, res) => { 
+  res.json(urlDatabase);
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on ${PORT}!`);
 });
