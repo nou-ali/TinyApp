@@ -7,6 +7,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//name of method, path adn what we're goin to do
 app.get("/", (req, res) => {
   res.send("Hello!");
 
