@@ -32,7 +32,13 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Add a GET Route to Show the Form
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 // Creates shortened URL, created a map for urlDatabase
+//req.params will return parameters in the matched route.
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
