@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/nou-ali/TinyApp/issues"
   },
-  "homepage": "https://github.com/nou-ali/TinyApp#readme"
+  "homepage": "https://github.com/nou-ali/TinyApp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
