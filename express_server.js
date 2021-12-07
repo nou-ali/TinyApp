@@ -47,16 +47,16 @@ app.get("/urls", (req, res) => {
 // will then be redirected to the shortURL page
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  const longURL = req.body.longURL
-  const shortURL = generateRandomString()
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);         
+  res.redirect(`/urls/${shortURL}`);
 });
 
 //Redirect any request to "/u/:shortURL" to its longURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL)
+  console.log(longURL);
   res.redirect(longURL);
 });
 
