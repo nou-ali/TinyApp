@@ -43,6 +43,21 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+
+//POST route that removes a URL resource: POST /urls/:shortURL/delete
+//After the resource has been deleted, redirect the client back to the urls_index page ("/urls").
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  console.log(req.body);  // Log the POST request body to the console
+  // const longURL = req.body.longURL;
+  // const shortURL = generateRandomString();
+  console.log(req.params.shortURL);
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls"); // after pressing delete, redirects to http://localhost:8080/urls
+});
+
+
+
 //creating a post req to shortURL-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
 // will then be redirected to the shortURL page
 app.post("/urls", (req, res) => {
