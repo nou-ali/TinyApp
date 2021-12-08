@@ -3,7 +3,7 @@
     <a class="navbar-brand" href="/urls">TinyApp</a>
         <!-- Adding login form -->
     <% if (username){%>
-      <h4>Logged in as <%= username %></h4>
+      <h5>Logged in as <%= username %></h5>
       <form method="POST" action="/logout">
         <button type ="submit" class="btn btn-primary">Sign out</button>
       </form>
@@ -12,6 +12,9 @@
     <input name="username" type="text" placeholder="Type in username">
     <button type ="submit" class="btn btn-primary">Sign in</button>
     </form>
+    <form method="GET" action="/register">
+      <button type ="submit" class="btn btn-primary">Register</button>
+      </form>
     <% } %> 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
