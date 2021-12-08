@@ -85,11 +85,18 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:id", (req, res) => { 
-  console.log(req.body); 
-  //console.log(req.params); 
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body);
+  //console.log(req.params);
   urlDatabase[req.params.id] = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
-  res.redirect("/urls"); 
+  res.redirect("/urls");
+});
+
+//an endpoint to handle a POST to /login
+app.post("/login", (req, res) => {
+  //console.log(req.body);
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
 });
 
 
