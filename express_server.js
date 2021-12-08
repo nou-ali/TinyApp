@@ -23,6 +23,21 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//user database
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
 //name of method, path and what we're goin to do
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -42,7 +57,7 @@ app.get("/hello", (req, res) => {
 //When sending variables to an EJS template, we need to send them inside an object
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase,
-    username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
     res.render("urls_index", templateVars);
   });
 
@@ -79,7 +94,7 @@ app.get("/u/:shortURL", (req, res) => {
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -87,7 +102,7 @@ app.get("/urls/new", (req, res) => {
 //req.params will return parameters in the matched route.
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-  username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -101,15 +116,56 @@ app.post("/urls/:id", (req, res) => {
 
 //Registering users
 app.get("/register", (req, res) => {
+  const currentUser = users[req.cookies["user_id"]];
+  //users[userRandomOne]
   const templateVars = {
-    username: req.cookies.username };
+    user : currentUser };
+    console.log(currentUser);
   res.render("register", templateVars);
  }); 
+
+//  you need to generate and declare newId using the helper function we created for generating the shortURL, then save it in the cookie
+// also need to create email & password variables using req.body (whatever you typed in username & password in registration page)
+// then add those in the global object, users
+
+
+ app.post("/register", (req, res) => {
+    // need to add new user to users object
+  //id, email, password --> generateRandomString
+  const newUserId = generateRandomString();
+  const newEmail = req.body.email;
+  const newPassword = req.body.password;
+  const newUser = {
+    id: newUserId,
+    email: newEmail,
+    password: newPassword
+  };
+ 
+  console.log(users[newUserId]);
+  
+  if (newUser.email === "" || newUser.password === "") {
+    return res.status(400).send("email and password cannot be blank");
+  } 
+  console.log(users, newUser);
+  for (let ids in users) {
+    if (users[ids].email === newUser.email) {
+      return res.status(400).send('a user with that email already exists');
+    }
+  }
+
+  users[newUserId] = newUser;
+  
+
+  console.log(newUser);
+
+  res.cookie('user_id', newUserId);
+  res.redirect("/urls");  
+});
 
 //login 
 app.get('/login', (req, res) => {
   const templateVars = { urls: urlDatabase,
-    username: req.body.username };
+    user: users[req.cookies["user_id"]] };
   res.render('login', templateVars);
  });  
 
@@ -118,7 +174,7 @@ app.get('/login', (req, res) => {
 app.post("/login", (req, res) => {
   // const templateVars = { urls: urlDatabase,
   //   username: req.body["username"] };
-  res.cookie('username', req.body.username) 
+  res.cookie("user_id", req.body.username) 
   //console.log(req.body)
   res.redirect("/urls");  // or /urls/new"?
 });
@@ -129,7 +185,7 @@ app.post("/logout", (req, res) => {
   // const templateVars = { urls: urlDatabase,
   //   username: req.body.username };
   //res.cookie("username", req.body.username)
-  res.clearCookie("username", req.body.username) 
+  res.clearCookie("user_id") 
   //console.log(req.body)
   res.redirect("/urls"); // or /urls/new"?
 });
