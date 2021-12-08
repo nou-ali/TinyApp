@@ -1,10 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; //default port
 
 //Making data readable for humans
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 //In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
 const generateRandomString = (length = 8) => {
@@ -96,7 +98,7 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   //console.log(req.body);
   res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  res.redirect("/urls/"); // new?
 });
 
 
