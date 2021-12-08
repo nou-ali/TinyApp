@@ -5,7 +5,7 @@ const app = express();
 const PORT = 8080; //default port
 
 //Making data readable for humans
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({extended: true})); //false?x
 app.use(cookieParser());
 
 //In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
@@ -23,9 +23,9 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-//name of method, path adn what we're goin to do
+//name of method, path and what we're goin to do
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 //Showcase JSON string representing the entire urlDatabase object
@@ -41,9 +41,10 @@ app.get("/hello", (req, res) => {
 // route for /urls_index.ejs, will pass the URL data to our template.
 //When sending variables to an EJS template, we need to send them inside an object
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
-});
+  const templateVars = { urls: urlDatabase,
+    username: req.cookies.username };
+    res.render("urls_index", templateVars);
+  });
 
 
 //POST route that removes a URL resource: POST /urls/:shortURL/delete
@@ -77,13 +78,16 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies.username };
+  res.render("urls_new", templateVars);
 });
 
 // Creates shortened URL, created a map for urlDatabase
 //req.params will return parameters in the matched route.
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+  username: req.cookies.username };
   res.render("urls_show", templateVars);
 });
 
@@ -91,14 +95,37 @@ app.post("/urls/:id", (req, res) => {
   console.log(req.body);
   //console.log(req.params);
   urlDatabase[req.params.id] = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
+  res.cookie('username', req.body.username) 
   res.redirect("/urls");
 });
 
+
+//login 
+app.get('/login', (req, res) => {
+  const templateVars = { urls: urlDatabase,
+    username: req.body["username"] };
+  res.render('login', templateVars);
+ });  //--- do I need an app.get for login, since it worked fine at one point without it?
+
+
 //an endpoint to handle a POST to /login
 app.post("/login", (req, res) => {
-  //console.log(req.body);
-  res.cookie("username", req.body.username);
-  res.redirect("/urls/"); // new?
+  // const templateVars = { urls: urlDatabase,
+  //   username: req.body["username"] };
+  res.cookie('username', req.body.username) 
+  //console.log(req.body)
+  res.redirect("/urls");  // or /urls/new"?
+});
+
+
+//logout
+app.post("/logout", (req, res) => {
+  // const templateVars = { urls: urlDatabase,
+  //   username: req.body.username };
+  //res.cookie("username", req.body.username)
+  res.clearCookie("username", req.body.username) 
+  //console.log(req.body)
+  res.redirect("/urls"); // or /urls/new"?
 });
 
 
