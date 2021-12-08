@@ -99,13 +99,19 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+//Registering users
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies.username };
+  res.render("register", templateVars);
+ }); 
 
 //login 
 app.get('/login', (req, res) => {
   const templateVars = { urls: urlDatabase,
-    username: req.body["username"] };
+    username: req.body.username };
   res.render('login', templateVars);
- });  //--- do I need an app.get for login, since it worked fine at one point without it?
+ });  
 
 
 //an endpoint to handle a POST to /login
