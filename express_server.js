@@ -13,6 +13,16 @@ const generateRandomString = (length = 8) => {
   return Math.random().toString(16).substring(2, length);
 };
 
+// find user by email
+let checkUsers = function (email) {
+  for (let ids in users) {
+    if(users[ids].email === email) {
+      return users[ids];
+    }
+}
+return null;
+}
+
 //console.log(generateRandomString(8));
 
 //This tells the Express app to use EJS as its templating engine
@@ -132,26 +142,25 @@ app.get("/register", (req, res) => {
  app.post("/register", (req, res) => {
     // need to add new user to users object
   //id, email, password --> generateRandomString
+  
+ const newEmail = req.body.email;
+ const newPassword = req.body.password;
+  const user = checkUsers(newEmail)
+  if (user) {
+    return res.status(403).send('a user with that email already exists');
+  } 
+  
+  if (newEmail === "" || newPassword === "") {
+    return res.status(400).send("email and password cannot be blank");
+  } 
+ 
   const newUserId = generateRandomString();
-  const newEmail = req.body.email;
-  const newPassword = req.body.password;
   const newUser = {
     id: newUserId,
     email: newEmail,
     password: newPassword
   };
- 
-  //console.log(users[newUserId]);
   
-  if (newUser.email === "" || newUser.password === "") {
-    return res.status(400).send("email and password cannot be blank");
-  } 
-  //console.log(users, newUser);
-  for (let ids in users) {
-    if (users[ids].email === newUser.email) {
-      return res.status(400).send('a user with that email already exists');
-    }
-  }
 
   users[newUserId] = newUser;
   
@@ -169,22 +178,32 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
  });  
 
-
-//an endpoint to handle a POST to /login
 app.post("/login", (req, res) => {
-  // const templateVars = { urls: urlDatabase,
-  //   username: req.body["username"] };
-  res.cookie("user_id", req.body.username) 
-  //console.log(req.body)
-  res.redirect("/urls");  // or /urls/new"?
+const email = req.body.email;
+const password = req.body.password;
+
+//console.log(users[newUserId]);
+//console.log(users, newUser);
+
+const user = checkUsers(email)
+if (! user || user.password !== password) {
+  return res.status(403).send('invalid credentials');
+} 
+
+//Do I need to loop through passowrds?
+
+
+  //console.log(newUser);
+
+res.cookie('user_id', user.id);
+res.redirect("/urls");  
 });
+
 
 
 //logout
 app.post("/logout", (req, res) => {
-  // const templateVars = { urls: urlDatabase,
-  //   username: req.body.username };
-  //res.cookie("username", req.body.username)
+
   res.clearCookie("user_id") 
   //console.log(req.body)
   res.redirect("/urls"); // or /urls/new"?
@@ -194,3 +213,4 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on ${PORT}!`);
 });
+
