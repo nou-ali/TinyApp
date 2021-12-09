@@ -2,20 +2,6 @@
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
         <!-- Adding login form -->
-    <% if (user){%>
-      <h5>Logged in as <%= user.email %></h5>
-      <form method="POST" action="/logout">
-        <button type ="submit" class="btn btn-primary">Sign out</button>
-      </form>
-      <% } else { %>
-        <form method="POST" action="/login">
-    <input name="username" type="text" placeholder="Type in username">
-    <button type ="submit" class="btn btn-primary">Sign in</button>
-    </form>
-    <form method="GET" action="/register">
-      <button type ="submit" class="btn btn-primary">Register</button>
-      </form>
-    <% } %> 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -25,5 +11,22 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <% if (user){%>
+      <h5>Logged in as <%= user.email %></h5>
+      <form method="POST" action="/logout">
+        <button type ="submit" class="btn btn-primary">Sign out</button>
+      </form>
+      <% } else { %>
+        <!-- <form method="GET" action="/login">
+    <button type ="submit" class="btn btn-primary">Sign in</button>
+    </form>
+    <form method="GET" action="/register"> -->
+      <!-- <button type ="submit" class="btn btn-primary">Register</button>
+      </form> -->
+      <div class="navbar-nav">
+      <a class="nav-item nav-link" href="/login">Sign in</a>
+      <a class="nav-item nav-link" href="/register">Register</a>
+      </div>
+    <% } %> 
   </nav>
 </header>
