@@ -5,7 +5,7 @@ const app = express();
 const PORT = 8080; //default port
 
 //Making data readable for humans
-app.use(bodyParser.urlencoded({extended: true})); //false?x
+app.use(bodyParser.urlencoded({extended: true})); //
 app.use(cookieParser());
 
 //In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
@@ -28,9 +28,17 @@ return null;
 //This tells the Express app to use EJS as its templating engine
 app.set("view engine", "ejs");
 
+
+// urlDatabase
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "userRandomID"
+  }
 };
 
 //user database
@@ -90,30 +98,45 @@ app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+  const userID = req.cookies["user_id"];
+  console.log("old",urlDatabase);
+  urlDatabase[shortURL] = {longURL, userID};
+  console.log("new",urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
 //Redirect any request to "/u/:shortURL" to its longURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   console.log(longURL);
   res.redirect(longURL);
 });
 
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
+  console.log("request",req.params)
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
     user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  // if unauthorized login redirect to login page, other users and go to urls_new
+    if(!templateVars.user) {
+      res.redirect("/login");
+    } else {
+      res.render("urls_new", templateVars);
+    }
 });
 
 // Creates shortened URL, created a map for urlDatabase
 //req.params will return parameters in the matched route.
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies["user_id"]] };
-  res.render("urls_show", templateVars);
+    
+    if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+      res.render("urls_show", templateVars);
+    } else {
+      return res.status(401).send('unauthorized user');
+    }
+  
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -133,10 +156,6 @@ app.get("/register", (req, res) => {
     console.log(currentUser);
   res.render("register", templateVars);
  }); 
-
-//  you need to generate and declare newId using the helper function we created for generating the shortURL, then save it in the cookie
-// also need to create email & password variables using req.body (whatever you typed in username & password in registration page)
-// then add those in the global object, users
 
 
  app.post("/register", (req, res) => {
@@ -190,8 +209,6 @@ if (! user || user.password !== password) {
   return res.status(403).send('invalid credentials');
 } 
 
-//Do I need to loop through passowrds?
-
 
   //console.log(newUser);
 
@@ -206,7 +223,7 @@ app.post("/logout", (req, res) => {
 
   res.clearCookie("user_id") 
   //console.log(req.body)
-  res.redirect("/urls"); // or /urls/new"?
+  res.redirect("/urls"); 
 });
 
 
