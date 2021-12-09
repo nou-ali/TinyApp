@@ -13,6 +13,16 @@ const generateRandomString = (length = 8) => {
   return Math.random().toString(16).substring(2, length);
 };
 
+// find user by email
+let checkUsers = function (email) {
+  for (let ids in users) {
+    if(users[ids].email === email) {
+      return users[ids];
+    }
+}
+return null;
+}
+
 //console.log(generateRandomString(8));
 
 //This tells the Express app to use EJS as its templating engine
@@ -21,6 +31,21 @@ app.set("view engine", "ejs");
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+//user database
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
 };
 
 //name of method, path and what we're goin to do
@@ -42,7 +67,7 @@ app.get("/hello", (req, res) => {
 //When sending variables to an EJS template, we need to send them inside an object
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase,
-    username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
     res.render("urls_index", templateVars);
   });
 
@@ -79,7 +104,7 @@ app.get("/u/:shortURL", (req, res) => {
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -87,7 +112,7 @@ app.get("/urls/new", (req, res) => {
 //req.params will return parameters in the matched route.
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-  username: req.cookies.username };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -99,31 +124,87 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+//Registering users
+app.get("/register", (req, res) => {
+  const currentUser = users[req.cookies["user_id"]];
+  //users[userRandomOne]
+  const templateVars = {
+    user : currentUser };
+    console.log(currentUser);
+  res.render("register", templateVars);
+ }); 
+
+//  you need to generate and declare newId using the helper function we created for generating the shortURL, then save it in the cookie
+// also need to create email & password variables using req.body (whatever you typed in username & password in registration page)
+// then add those in the global object, users
+
+
+ app.post("/register", (req, res) => {
+    // need to add new user to users object
+  //id, email, password --> generateRandomString
+  
+ const newEmail = req.body.email;
+ const newPassword = req.body.password;
+  const user = checkUsers(newEmail)
+  if (user) {
+    return res.status(403).send('a user with that email already exists');
+  } 
+  
+  if (newEmail === "" || newPassword === "") {
+    return res.status(400).send("email and password cannot be blank");
+  } 
+ 
+  const newUserId = generateRandomString();
+  const newUser = {
+    id: newUserId,
+    email: newEmail,
+    password: newPassword
+  };
+  
+
+  users[newUserId] = newUser;
+  
+
+  //console.log(newUser);
+
+  res.cookie('user_id', newUserId);
+  res.redirect("/urls");  
+});
 
 //login 
 app.get('/login', (req, res) => {
   const templateVars = { urls: urlDatabase,
-    username: req.body["username"] };
+    user: users[req.cookies["user_id"]] };
   res.render('login', templateVars);
- });  //--- do I need an app.get for login, since it worked fine at one point without it?
+ });  
 
-
-//an endpoint to handle a POST to /login
 app.post("/login", (req, res) => {
-  // const templateVars = { urls: urlDatabase,
-  //   username: req.body["username"] };
-  res.cookie('username', req.body.username) 
-  //console.log(req.body)
-  res.redirect("/urls");  // or /urls/new"?
+const email = req.body.email;
+const password = req.body.password;
+
+//console.log(users[newUserId]);
+//console.log(users, newUser);
+
+const user = checkUsers(email)
+if (! user || user.password !== password) {
+  return res.status(403).send('invalid credentials');
+} 
+
+//Do I need to loop through passowrds?
+
+
+  //console.log(newUser);
+
+res.cookie('user_id', user.id);
+res.redirect("/urls");  
 });
+
 
 
 //logout
 app.post("/logout", (req, res) => {
-  // const templateVars = { urls: urlDatabase,
-  //   username: req.body.username };
-  //res.cookie("username", req.body.username)
-  res.clearCookie("username", req.body.username) 
+
+  res.clearCookie("user_id") 
   //console.log(req.body)
   res.redirect("/urls"); // or /urls/new"?
 });
@@ -132,3 +213,4 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on ${PORT}!`);
 });
+
