@@ -141,12 +141,12 @@ app.get("/register", (req, res) => {
     password: newPassword
   };
  
-  console.log(users[newUserId]);
+  //console.log(users[newUserId]);
   
   if (newUser.email === "" || newUser.password === "") {
     return res.status(400).send("email and password cannot be blank");
   } 
-  console.log(users, newUser);
+  //console.log(users, newUser);
   for (let ids in users) {
     if (users[ids].email === newUser.email) {
       return res.status(400).send('a user with that email already exists');
@@ -156,7 +156,7 @@ app.get("/register", (req, res) => {
   users[newUserId] = newUser;
   
 
-  console.log(newUser);
+  //console.log(newUser);
 
   res.cookie('user_id', newUserId);
   res.redirect("/urls");  
