@@ -1,13 +1,19 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080; //default port
 
 //Making data readable for humans
 app.use(bodyParser.urlencoded({extended: true})); //
-app.use(cookieParser());
+// app.use(cookieParser());
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ["mX0Du4hAQg", "DTTa4Hm3Zm"],
+}));
 
 //In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
 const generateRandomString = (length = 8) => {
@@ -88,7 +94,7 @@ app.get("/hello", (req, res) => {
 // route for /urls_index.ejs, will pass the URL data to our template.
 //When sending variables to an EJS template, we need to send them inside an object
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session["user_id"]];
   //console.log(users); // checked if password was hashed
   let templateVars;
   if (user) {
@@ -123,7 +129,7 @@ app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   urlDatabase[shortURL] = {longURL, userID};
   res.redirect(`/urls/${shortURL}`);
 });
@@ -139,7 +145,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/new", (req, res) => {
   console.log("request",req.params);
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-    user: users[req.cookies["user_id"]] };
+    user: users[req.session["user_id"]] };
   // if unauthorized login redirect to login page, other users and go to urls_new
   if (!templateVars.user) {
     res.redirect("/login");
@@ -152,8 +158,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {  //need to prevent from deele
   //console.log(req.body);  // Log the POST request body to the console
   //console.log(req.params.shortURL);
   // we need to check if url belongs to user before allowing them to delete
-  // const user = users[req.cookies["user_id"]];
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies["user_id"]) {
+  // const user = users[req.session["user_id"]];
+  if (urlDatabase[req.params.shortURL].userID !== req.session["user_id"]) {
     return res.status(401).send('Url is not yours');
   }
   if (!urlDatabase[req.params.shortURL]) {
@@ -170,8 +176,8 @@ app.get("/urls/:shortURL", (req, res) => {
     res.redirect("/urls");
   }
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies["user_id"]] };
-  if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    user: users[req.session["user_id"]] };
+  if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
     res.render("urls_show", templateVars);
   } else {
     return res.status(401).send('unauthorized user');
@@ -182,7 +188,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   //console.log(req.body);
   //console.log(req.params);
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies["user_id"]) {
+  if (urlDatabase[req.params.shortURL].userID !== req.session["user_id"]) {
     return res.status(401).send('Url is not yours');
   }
 
@@ -191,7 +197,8 @@ app.post("/urls/:id", (req, res) => {
   }
 
   urlDatabase[req.params.id] = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
-  res.cookie('username', req.body.username); //user_id?
+  // res.cookie('username', req.body.username); //user_id?
+  req.session.username = req.body.username;
   res.redirect("/urls");
   if (urlDatabase[req.params.id] !== req.body.longURL) {
     res.status(403).send("Error...not permitted");
@@ -201,7 +208,7 @@ app.post("/urls/:id", (req, res) => {
 
 //Registering users
 app.get("/register", (req, res) => {
-  const currentUser = users[req.cookies["user_id"]];
+  const currentUser = users[req.session["user_id"]];
   //users[userRandomOne]
   const templateVars = {
     user : currentUser };
@@ -237,14 +244,15 @@ app.post("/register", (req, res) => {
 
   //console.log(newUser);
 
-  res.cookie('user_id', newUserId);
+  // res.cookie('user_id', newUserId);
+  req.session.user_id = newUserId;
   res.redirect("/urls");
 });
 
 //login
 app.get('/login', (req, res) => {
   const templateVars = { urls: urlDatabase,
-    user: users[req.cookies["user_id"]] };
+    user: users[req.session["user_id"]] };
   res.render('login', templateVars);
 });
 
@@ -272,7 +280,8 @@ app.post("/login", (req, res) => {
 
   //console.log(newUser);
 
-  res.cookie('user_id', user.id);
+  // res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
@@ -280,8 +289,7 @@ app.post("/login", (req, res) => {
 
 //logout
 app.post("/logout", (req, res) => {
-
-  res.clearCookie("user_id");
+  req.session.user_id = null;
   //console.log(req.body)
   res.redirect("/urls");
 });
@@ -290,4 +298,3 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on ${PORT}!`);
 });
-
