@@ -15,6 +15,9 @@
 <body>
     <%- include('partials/_header') %>
   <main style="margin: 1em;">
+    <% if (error) { %>
+      <h5 class="alert alert-danger" role="alert"><%=error%></h5>
+      <% } %>
     <h3>My URLs</h3>
     <table class="table">
       <thead>
@@ -29,7 +32,7 @@
         <% for(let url in urls) { %>
           <tr>
             <td> <a href="/urls/<%= url %>"><%= url %></a></td>
-            <td><%= urls[url].longURL %></td>
+            <td><%= urls[url] %></td>
             <td>
               <a class="btn btn-primary" href="/urls/<%= url %>">Edit</a>
               <!-- <form
