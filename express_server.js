@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080; //default port
 
@@ -88,6 +89,7 @@ app.get("/hello", (req, res) => {
 //When sending variables to an EJS template, we need to send them inside an object
 app.get("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]];
+  //console.log(users); // checked if password was hashed
   let templateVars;
   if (user) {
     const userID = user.id;
@@ -212,7 +214,7 @@ app.post("/register", (req, res) => {
   // need to add new user to users object
   //id, email, password --> generateRandomString
   const newEmail = req.body.email;
-  const newPassword = req.body.password;
+  const newPassword = bcrypt.hashSync(req.body.password, 10) // Modifying registration endpoint to use bcrypt to hash the password
   const user = checkUsers(newEmail);
   if (user) {
     return res.status(403).send('a user with that email already exists');
@@ -254,9 +256,18 @@ app.post("/login", (req, res) => {
   //console.log(users, newUser);
 
   const user = checkUsers(email);
-  if (! user || user.password !== password) {
+  // if (! user || user.password !== password) {
+  //   return res.status(403).send('invalid credentials');
+  // }
+
+  if (!user) {
     return res.status(403).send('invalid credentials');
   }
+
+  if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(403).send('invalid credentials');
+  }
+  
 
 
   //console.log(newUser);
