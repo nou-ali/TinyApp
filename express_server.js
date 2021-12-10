@@ -20,8 +20,8 @@ const generateRandomString = (length = 8) => {
   return Math.random().toString(16).substring(2, length);
 };
 
-// find user by email
-let checkUsers = function(email) {
+// helper function find user by email
+let checkUsers = function(email, users) {
   for (let ids in users) {
     if (users[ids].email === email) {
       return users[ids];
@@ -222,7 +222,7 @@ app.post("/register", (req, res) => {
   //id, email, password --> generateRandomString
   const newEmail = req.body.email;
   const newPassword = bcrypt.hashSync(req.body.password, 10) // Modifying registration endpoint to use bcrypt to hash the password
-  const user = checkUsers(newEmail);
+  const user = checkUsers(newEmail, users);
   if (user) {
     return res.status(403).send('a user with that email already exists');
   }
@@ -263,7 +263,7 @@ app.post("/login", (req, res) => {
   //console.log(users[newUserId]);
   //console.log(users, newUser);
 
-  const user = checkUsers(email);
+  const user = checkUsers(email, users);
   // if (! user || user.password !== password) {
   //   return res.status(403).send('invalid credentials');
   // }
