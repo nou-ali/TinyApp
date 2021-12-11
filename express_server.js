@@ -1,3 +1,4 @@
+const { checkUsers, urlsForUser, generateRandomString } = require('./helper.js');
 const express = require("express");
 const bodyParser = require("body-parser");
 // const cookieParser = require('cookie-parser');
@@ -14,23 +15,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ["mX0Du4hAQg", "DTTa4Hm3Zm"],
 }));
-
-//In order to simulate generating a "unique" shortURL, for now we will implement a function that returns a string of 6 random alphanumeric characters
-const generateRandomString = (length = 8) => {
-  return Math.random().toString(16).substring(2, length);
-};
-
-// helper function find user by email
-let checkUsers = function(email, users) {
-  for (let ids in users) {
-    if (users[ids].email === email) {
-      return users[ids];
-    }
-  }
-  return null;
-};
-
-//console.log(generateRandomString(8));
 
 //This tells the Express app to use EJS as its templating engine
 app.set("view engine", "ejs");
@@ -61,19 +45,6 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-};
-
-//returns the URLs where the userID is equal to the id of the currently logged-in user.
-
-
-const urlsForUser = function(userID, urlDatabase) {
-  let usersURLs = {};
-  for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === userID) {
-      usersURLs[shortURL] = urlDatabase[shortURL].longURL;
-    }
-  }
-  return usersURLs;
 };
 
 //name of method, path and what we're goin to do
@@ -115,13 +86,6 @@ app.get("/urls", (req, res) => {
   }
   res.render('urls_index', templateVars);
 });
-
-
-
-//POST route that removes a URL resource: POST /urls/:shortURL/delete
-//After the resource has been deleted, redirect the client back to the urls_index page ("/urls").
-// redirects to another page now?
-
 
 //creating a post req to shortURL-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
 // will then be redirected to the shortURL page
@@ -221,7 +185,7 @@ app.post("/register", (req, res) => {
   // need to add new user to users object
   //id, email, password --> generateRandomString
   const newEmail = req.body.email;
-  const newPassword = bcrypt.hashSync(req.body.password, 10) // Modifying registration endpoint to use bcrypt to hash the password
+  const newPassword = bcrypt.hashSync(req.body.password, 10); // Modifying registration endpoint to use bcrypt to hash the password
   const user = checkUsers(newEmail, users);
   if (user) {
     return res.status(403).send('a user with that email already exists');
@@ -276,8 +240,6 @@ app.post("/login", (req, res) => {
     return res.status(403).send('invalid credentials');
   }
   
-
-
   //console.log(newUser);
 
   // res.cookie('user_id', user.id);
