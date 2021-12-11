@@ -144,20 +144,23 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.session["user_id"]) {
+  
+  if (!urlDatabase[req.params.id]) {
+    return res.status(401).send('Error... url does not exist');
+  }
+  
+  if (urlDatabase[req.params.id].userID !== req.session["user_id"]) {
     return res.status(401).send('Url is not yours');
   }
 
-  if (!urlDatabase[req.params.shortURL]) {
+  if (!urlDatabase[req.params.id]) {
     return res.status(401).send('Not authorized');
   }
 
-  urlDatabase[req.params.id] = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
+  urlDatabase[req.params.id].longURL = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
   req.session.username = req.body.username;
   res.redirect("/urls");
-  if (urlDatabase[req.params.id] !== req.body.longURL) {
-    res.status(403).send("Error...not permitted");
-  }
+
 
 });
 
