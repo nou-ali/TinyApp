@@ -1,7 +1,6 @@
 const { checkUsers, urlsForUser, generateRandomString } = require('./helper.js');
 const express = require("express");
 const bodyParser = require("body-parser");
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
@@ -9,7 +8,6 @@ const PORT = 8080; //default port
 
 //Making data readable for humans
 app.use(bodyParser.urlencoded({extended: true})); //
-// app.use(cookieParser());
 
 app.use(cookieSession({
   name: 'session',
@@ -119,10 +117,6 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {  //need to prevent from deeleting.
-  //console.log(req.body);  // Log the POST request body to the console
-  //console.log(req.params.shortURL);
-  // we need to check if url belongs to user before allowing them to delete
-  // const user = users[req.session["user_id"]];
   if (urlDatabase[req.params.shortURL].userID !== req.session["user_id"]) {
     return res.status(401).send('Url is not yours');
   }
@@ -150,8 +144,6 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  //console.log(req.body);
-  //console.log(req.params);
   if (urlDatabase[req.params.shortURL].userID !== req.session["user_id"]) {
     return res.status(401).send('Url is not yours');
   }
@@ -161,7 +153,6 @@ app.post("/urls/:id", (req, res) => {
   }
 
   urlDatabase[req.params.id] = req.body.longURL; // it should modify the corresponding longURL, and then redirect the client back to "/urls".
-  // res.cookie('username', req.body.username); //user_id?
   req.session.username = req.body.username;
   res.redirect("/urls");
   if (urlDatabase[req.params.id] !== req.body.longURL) {
@@ -173,7 +164,6 @@ app.post("/urls/:id", (req, res) => {
 //Registering users
 app.get("/register", (req, res) => {
   const currentUser = users[req.session["user_id"]];
-  //users[userRandomOne]
   const templateVars = {
     user : currentUser };
   console.log(currentUser);
@@ -205,10 +195,6 @@ app.post("/register", (req, res) => {
 
   users[newUserId] = newUser;
   
-
-  //console.log(newUser);
-
-  // res.cookie('user_id', newUserId);
   req.session.user_id = newUserId;
   res.redirect("/urls");
 });
@@ -224,14 +210,8 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  //console.log(users[newUserId]);
-  //console.log(users, newUser);
-
   const user = checkUsers(email, users);
-  // if (! user || user.password !== password) {
-  //   return res.status(403).send('invalid credentials');
-  // }
-
+  
   if (!user) {
     return res.status(403).send('invalid credentials');
   }
@@ -240,9 +220,6 @@ app.post("/login", (req, res) => {
     return res.status(403).send('invalid credentials');
   }
   
-  //console.log(newUser);
-
-  // res.cookie('user_id', user.id);
   req.session.user_id = user.id;
   res.redirect("/urls");
 });
@@ -252,7 +229,6 @@ app.post("/login", (req, res) => {
 //logout
 app.post("/logout", (req, res) => {
   req.session.user_id = null;
-  //console.log(req.body)
   res.redirect("/urls");
 });
 
