@@ -23,7 +23,7 @@ describe('checkUsers', function() {
   });
 
   it('should return undefined if the email provided is not valid', function() {
-    const user = checkUsers ("user3@example.com", testUsers);
+    const user = checkUsers("user3@example.com", testUsers);
     const expectedOutput = undefined;
     assert.equal(user,expectedOutput);
   });
